@@ -11,7 +11,7 @@ Template for creating a project that registers multiple windows services for a s
 - To register (install) the services:
    `MultipleWindowsServicesInOneProject.exe /i`
 - To unregister (uninstall) the services:
-   `MultipleWindowsServicesInOneProject.exe /u
+   `MultipleWindowsServicesInOneProject.exe /u`
 
 ### License Info
 
