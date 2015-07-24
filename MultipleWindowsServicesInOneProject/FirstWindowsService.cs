@@ -1,12 +1,12 @@
-﻿using System;
+﻿using System.Configuration;
 using System.Diagnostics;
 using System.ServiceProcess;
-using System.Configuration;
 
 namespace MultipleWindowsServicesInOneProject
 {
     public partial class FirstWindowsService : ServiceBase
     {
+
         public FirstWindowsService()
         {
             this.InitializeComponent();

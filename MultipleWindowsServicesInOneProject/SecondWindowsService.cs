@@ -1,19 +1,12 @@
 ﻿using System.Configuration;
 using System.Diagnostics;
 using System.ServiceProcess;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace MultipleWindowsServicesInOneProject
 {
     public partial class SecondWindowsService : ServiceBase
     {
-        #region Private Members
-
-        private bool runRightAfterLaunch = true;
-        private CancellationTokenSource cancelTokenSrc;
-
-        #endregion Private Members
 
         #region Constructors
 
@@ -32,51 +25,17 @@ namespace MultipleWindowsServicesInOneProject
 
         protected override void OnStart(string[] args)
         {
-            this.eventLog.WriteEntry("Service is started.");
-            if (this.runRightAfterLaunch)
-            {
-                
-            }
+            this.eventLog.WriteEntry(string.Format("Started: {0}", this.ServiceName));
         }
 
         protected override void OnStop()
         {
-            if (cancelTokenSrc != null)
-            {
-                cancelTokenSrc.Cancel();
-            }
-            this.eventLog.WriteEntry("Service is stopped.");
-        } 
+            this.eventLog.WriteEntry(string.Format("Stopped: {0}", this.ServiceName));
+        }
 
         #endregion
 
-
         #region Private Methods
-
-        private async Task MainTask()
-        {
-            cancelTokenSrc = new CancellationTokenSource();
-            var cancelToken = cancelTokenSrc.Token;
-            await Task.Run(() =>
-            {
-                for (long i = 0; i < 10000000000; i++)
-                {
-                    this.eventLog.WriteEntry(string.Format("Processing...  i = {0}", i));
-
-                    for (long j = 0; j < 1000000000000000000; j++)
-                    {
-
-                    }
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        this.eventLog.WriteEntry("Aborting...");
-                        cancelToken.ThrowIfCancellationRequested();
-                    }
-                }
-                //MainTask();
-            }, cancelToken);
-        }
-
 
         private void DefineEventLogging()
         {
