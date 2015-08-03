@@ -32,8 +32,8 @@ namespace MultipleWindowsServicesInOneProject
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 
-                new FirstWindowsService(),
-                new SecondWindowsService() 
+                new ServiceOne(),
+                new ServiceTwo() 
             };
             ServiceBase.Run(ServicesToRun);
         }

@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MultipleWindowsServicesInOneProject</RootNamespace>
     <AssemblyName>MultipleWindowsServicesInOneProject</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -45,17 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FirstWindowsService.cs">
+    <Compile Include="EventLogExtension.cs" />
+    <Compile Include="ServiceOne.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="FirstWindowsService.Designer.cs">
-      <DependentUpon>FirstWindowsService.cs</DependentUpon>
+    <Compile Include="ServiceOne.Designer.cs">
+      <DependentUpon>ServiceOne.cs</DependentUpon>
     </Compile>
-    <Compile Include="SecondWindowsService.cs">
+    <Compile Include="ServiceTwo.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="SecondWindowsService.Designer.cs">
-      <DependentUpon>SecondWindowsService.cs</DependentUpon>
+    <Compile Include="ServiceTwo.Designer.cs">
+      <DependentUpon>ServiceTwo.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -65,16 +67,21 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceBaseAsync.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FirstWindowsService.resx">
-      <DependentUpon>FirstWindowsService.cs</DependentUpon>
+    <EmbeddedResource Include="ServiceOne.resx">
+      <DependentUpon>ServiceOne.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SecondWindowsService.resx">
-      <DependentUpon>SecondWindowsService.cs</DependentUpon>
+    <EmbeddedResource Include="ServiceTwo.resx">
+      <DependentUpon>ServiceTwo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>

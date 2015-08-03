@@ -1,11 +1,12 @@
-# .net-multiWinSvcTemplate
+# .NET Multiple Windows (Async) Services
 
 Template for creating a project that registers multiple windows services for a single application.
 
 - This template includes two windows services that are registered and can be run separately through the Windows Services manager.
-- The project comes with an `app.config` which allows you to place the name of each service, so the service names could be referred to, by the installer, and also by the service itself (as the name the installer uses must match the name the service uses). 
-- The `app.config` includes descriptions for the services which is picked up by the installer during registration of the services.
-- The `app.config` also includes an EventLogName which is shared by the services. So all services log events using the same Event Log Name, and only the Event Sources are different. Each service uses its name as the Event Source.
+- The project comes with `ServiceBaseAsync` class which two services inherit from. This class provides methods for running the main processing in asynchronous manner. 
+- The project also comes with `EventLogExtension` which provides extension methods to write event entries based on log level settings that each service has. The log levels are defined in the `app.config` for each service.
+- The `app.config` also defines a common event log name used by all the services, as well as the service names and descriptions of the services. 
+The service names are used both by the project installer during service registration, and by the services themselves to define the event source.
 
 
 ### Service Registration

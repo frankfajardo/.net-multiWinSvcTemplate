@@ -2,7 +2,7 @@
 
 namespace MultipleWindowsServicesInOneProject
 {
-    partial class SecondWindowsService
+    partial class ServiceTwo
     {
         /// <summary> 
         /// Required designer variable.
@@ -33,7 +33,7 @@ namespace MultipleWindowsServicesInOneProject
             this.eventLog = new System.Diagnostics.EventLog();
             ((System.ComponentModel.ISupportInitialize)(this.eventLog)).BeginInit();
             // Give this service a temporary name so we don't break the designer. This is overwritten later in our code.
-            this.ServiceName ="SecondWindowsService";
+            this.ServiceName ="ServiceTwo";
             ((System.ComponentModel.ISupportInitialize)(this.eventLog)).EndInit();
         }
 
