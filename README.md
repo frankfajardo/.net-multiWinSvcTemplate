@@ -1,8 +1,10 @@
 # .NET Multiple Windows (Async) Services
 
+
 ### License Info
 
 MIT License.
+
 
 ### Overview
 
@@ -26,9 +28,12 @@ receives two parameters:
 1. **Cancellation Token** - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
 2. **Event Log** - this is the event log the service uses. It can be optinally used within DoWorkAsync.
 
-In the sample project, there are two **sample services**:
-- **ServiceOne** implements `DoWorkAsync()`, by writing an event log. So this is executed recursively.
-- **ServiceTwo** does not implement `DoWorkAsync()`. So when it is started, it runs the `DoWorkAsync()` method from the base class---which simply throws a `NotImplementedException`. This exception is by default written in the event log by the method `DoRecursiveWorkAsync()` in the base class.
+
+#### About the Sample Services ####
+
+This project includes these services:
+- *ServiceOne* implements `DoWorkAsync()`, and all it does is write an entry in the events log. So this is executed recursively.
+- *ServiceTwo* does not implement `DoWorkAsync()`. So when it runs, gets a `NotImplementedException`, which is default implementation of the method. This exception is handled by the base class method `DoRecursiveWorkAsync()`, which writes it in the events log. And since `DoWorkAsync()` is called recursively until the service is stopped, that exception will appear in the events log multiple times.
 
 
 ### How To Add Installer for A New Service
