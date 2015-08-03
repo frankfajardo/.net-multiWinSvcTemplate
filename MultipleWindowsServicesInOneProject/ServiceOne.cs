@@ -30,11 +30,13 @@ namespace MultipleWindowsServicesInOneProject
 
         #region Method Overrides
 
-        protected override void DoWork(EventLog eventLog)
+        protected override async Task DoWorkAsync(CancellationToken token, EventLog eventLog)
         {
-            eventLog.WriteInfoEntry("This is ServiceOne doing its task.");
+            await Task.Run(() =>
+            {
+                eventLog.WriteInfoEntry("This is ServiceOne doing its task.");
+            });
         }
-
 
         #endregion
 

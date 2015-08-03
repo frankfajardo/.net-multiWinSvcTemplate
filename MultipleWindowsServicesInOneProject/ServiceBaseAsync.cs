@@ -24,7 +24,7 @@ namespace MultipleWindowsServicesInOneProject
         protected override void OnStart(string[] args)
         {
             cancellationTokenSource = new CancellationTokenSource();
-            serviceTask = Task.Run(() => DoWorkAsync(cancellationTokenSource.Token, runIntervalMinutes));
+            serviceTask = Task.Run(() => DoRecursiveWorkAsync(cancellationTokenSource.Token, runIntervalMinutes));
 
             eventLog.WriteInfoEntry("Service is started", logLevel);
         }
@@ -51,15 +51,16 @@ namespace MultipleWindowsServicesInOneProject
             eventLog.WriteInfoEntry("Service is stopped.", logLevel);
         }
 
-        protected virtual async Task DoWorkAsync(CancellationToken token, int runIntervalMinutes)
+        protected virtual async Task DoRecursiveWorkAsync(CancellationToken token, int runIntervalMinutes)
         {
             while (true)
             {
                 eventLog.WriteInfoEntry("Task is started.", logLevel);
-                Task task1 = Task.Factory.StartNew(() => { DoWork(eventLog); });
+                //Task task = Task.Factory.StartNew(() => { DoWork(eventLog); });
+                Task task = DoWorkAsync(token, eventLog);
                 try
                 {
-                    task1.Wait();
+                    task.Wait();
                 }
                 catch (AggregateException ae)
                 {
@@ -84,9 +85,12 @@ namespace MultipleWindowsServicesInOneProject
             }
         }
 
-        protected virtual void DoWork(EventLog eventLog)
+        protected virtual async Task DoWorkAsync(CancellationToken token, EventLog eventLog)
         {
-            throw new NotImplementedException();
+            await Task.Run(() => 
+            { 
+                throw new NotImplementedException(String.Format("The \"{0}\" service has not implemented the DoWorkAsync() method inherited from the ServiceBaseAsync class.", this.ServiceName));
+            });
         }
 
         protected virtual void SetEventLog(string eventLogName, string eventSource, string eventLogLevel)

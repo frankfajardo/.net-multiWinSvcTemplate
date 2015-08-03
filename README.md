@@ -9,6 +9,14 @@ Sample project which registers multiple windows services.
 The service names are used both by the project installer during service registration, and by the services themselves to define the event source.
 
 
+### How To Use
+
+A service inheriting from the ServiceBaseAsync class must implement the DoWorkAsync method. This method is aimed to contain the main processing done by the service. This method receives two parameters:
+- Cancellation Token - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
+- Event Log - this is the event log the service uses. It can be optinally used within DoWorkAsync.
+
+In the sample project, `ServiceOne` implements the DoWorkAsync, whilst ServiceTwo does not. So when `ServiceTwo` is started, it runs the `DoWorkAsync()` method from the `ServiceBaseAsync` class, and all that does is log throw a `NotImplementedException`. This is by default written in the event log by the `DoRecursiveWorkAsync()` method in the `ServiceBaseAsync` class.
+
 ### Service Registration
 
 The project `.exe` can register and unregister the services.
