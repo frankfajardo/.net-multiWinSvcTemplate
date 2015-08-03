@@ -66,8 +66,6 @@ namespace Abcm.WindowsServices
                 logInstaller2
             });
 
-
-
         }
     }
 }
