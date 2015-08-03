@@ -25,8 +25,8 @@ The `DoWorkAsync()` method is intended to have the run the main processing of th
 
 The `DoWorkAsync()` method receives two parameters:
 receives two parameters:
-1. **Cancellation Token** - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
-2. **Event Log** - this is the event log the service uses. It can be optinally used within DoWorkAsync.
+- **Cancellation Token** - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
+- **Event Log** - this is the event log the service uses. It can be optinally used within DoWorkAsync.
 
 
 #### About the Sample Services 
