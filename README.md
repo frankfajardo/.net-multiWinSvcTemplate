@@ -1,8 +1,8 @@
 # .NET Multiple Windows (Async) Services
 
-Template for creating a project that registers multiple windows services for a single application.
+Sample project which registers multiple windows services.
 
-- This template includes two windows services that are registered and can be run separately through the Windows Services manager.
+- This sample project includes two windows services that are registered and can be run separately through the Windows Services manager.
 - The project comes with `ServiceBaseAsync` class which two services inherit from. This class provides methods for running the main processing in asynchronous manner. 
 - The project also comes with `EventLogExtension` which provides extension methods to write event entries based on log level settings that each service has. The log levels are defined in the `app.config` for each service.
 - The `app.config` also defines a common event log name used by all the services, as well as the service names and descriptions of the services. 
