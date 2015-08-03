@@ -29,21 +29,21 @@ receives two parameters:
 2. **Event Log** - this is the event log the service uses. It can be optinally used within DoWorkAsync.
 
 
-#### About the Sample Services ####
+#### About the Sample Services 
 
 This project includes these services:
 - *ServiceOne* implements `DoWorkAsync()`, and all it does is write an entry in the events log. So this is executed recursively.
 - *ServiceTwo* does not implement `DoWorkAsync()`. So when it runs, gets a `NotImplementedException`, which is default implementation of the method. This exception is handled by the base class method `DoRecursiveWorkAsync()`, which writes it in the events log. And since `DoWorkAsync()` is called recursively until the service is stopped, that exception will appear in the events log multiple times.
 
 
-### How To Add Installer for A New Service ### 
+### How To Add Installer for A New Service
 
 - Update the `ProjectInstaller.cs` and add a service installer and a service process installer for the new service you are adding. 
 - Copy the code for either of the two sample services.
 - Add the relevant entries in the `app.config` for your service.
  
 
-### Installing the Services ### 
+### Installing the Services
 
 - Build this project using the *Release* build.
 - Copy the content of `bin/Release` on this projectonto a location on your computer where you want the service to run from.
@@ -52,7 +52,7 @@ This project includes these services:
 - To install (or register) the windows services, run the command: `MultipleWindowsServicesInOneProject.exe /i`
 
 
-### Un-installing the Services ### 
+### Un-installing the Services
 
 - Launch `cmd.exe`.
 - On the command window, change directory to the location where you the service files.
