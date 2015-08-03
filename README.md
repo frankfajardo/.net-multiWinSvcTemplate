@@ -11,11 +11,17 @@ The service names are used both by the project installer during service registra
 
 ### How To Use
 
-A service inheriting from the ServiceBaseAsync class must implement the DoWorkAsync method. This method is aimed to contain the main processing done by the service. This method receives two parameters:
-- Cancellation Token - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
-- Event Log - this is the event log the service uses. It can be optinally used within DoWorkAsync.
+To create a new service that runs is processing asynchronously, the service must:
+- inherit from `ServiceBaseAsync` class
+- implement the method `DoWorkAsync()`.
 
-In the sample project, `ServiceOne` implements the DoWorkAsync, whilst ServiceTwo does not. So when `ServiceTwo` is started, it runs the `DoWorkAsync()` method from the `ServiceBaseAsync` class, and all that does is log throw a `NotImplementedException`. This is by default written in the event log by the `DoRecursiveWorkAsync()` method in the `ServiceBaseAsync` class.
+The `DoWorkAsync` method receives two parameters:
+- **Cancellation Token** - this is the cancellation token for the service task. It is passed to this method so the method can end gracefully when the service is being stopped.
+- **Event Log** - this is the event log the service uses. It can be optinally used within DoWorkAsync.
+
+In the sample project, there are two **sample services**:
+- **ServiceOne** implements `DoWorkAsync()`, by writing an event log. So this is executed recursively.
+- **ServiceTwo** does not implement `DoWorkAsync()`. So when it is started, it runs the `DoWorkAsync()` method from the base class---which simply throws a `NotImplementedException`. This exception is by default written in the event log by the method `DoRecursiveWorkAsync()` in the base class.
 
 ### Service Registration
 

@@ -56,7 +56,6 @@ namespace MultipleWindowsServicesInOneProject
             while (true)
             {
                 eventLog.WriteInfoEntry("Task is started.", logLevel);
-                //Task task = Task.Factory.StartNew(() => { DoWork(eventLog); });
                 Task task = DoWorkAsync(token, eventLog);
                 try
                 {
