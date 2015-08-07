@@ -16,16 +16,17 @@ namespace MultipleWindowsServicesInOneProject
         {
             InitializeComponent();
 
-            // Override service name set by the InitializeComponent() with the one in the app.config; this is also used by the project installer.
-            this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "ServiceName"];
+            this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "ServiceName"] ?? this.GetType().Name;
 
-            // All services logs event to the same Event Log Name.
-            string eventLogName = ConfigurationManager.AppSettings["EventLogName"];
-            string eventSource = this.ServiceName;
-            string eventLogLevel = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"];
-            SetEventLog(eventLogName, eventSource, eventLogLevel);
+            string eventLogName = ConfigurationManager.AppSettings["EventLogName"] ?? "Application";
+            string eventLogLevel = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"] ?? LogLevel.Information.ToString();
+            SetEventLog(eventLogName, this.ServiceName, eventLogLevel);
 
-            this.runIntervalMinutes = 5;
+            string runIntervals = this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "RunIntervalMinutes"] ?? "1";
+            if (!int.TryParse(runIntervals, out this.runIntervalMinutes))
+            { 
+                this.runIntervalMinutes = 1;
+            }
         }
 
         #region Method Overrides

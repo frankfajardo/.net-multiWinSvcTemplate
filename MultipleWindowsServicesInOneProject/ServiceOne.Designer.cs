@@ -30,15 +30,13 @@ namespace MultipleWindowsServicesInOneProject
         /// </summary>
         private void InitializeComponent()
         {
-            this.eventLog = new System.Diagnostics.EventLog();
-            ((System.ComponentModel.ISupportInitialize)(this.eventLog)).BeginInit();
-            // Give this service a temporary name so we don't break the designer. This is overwritten later in our code.
-            this.ServiceName = "ServiceOne.ServiceName";
-            ((System.ComponentModel.ISupportInitialize)(this.eventLog)).EndInit();
+            //this.eventLog = new System.Diagnostics.EventLog();
+            //((System.ComponentModel.ISupportInitialize)(this.eventLog)).BeginInit();
+            //((System.ComponentModel.ISupportInitialize)(this.eventLog)).EndInit();
         }
 
         #endregion
-
-        private System.Diagnostics.EventLog eventLog;
+        // Our base class already defines an eventlog.
+        //private System.Diagnostics.EventLog eventLog;
     }
 }

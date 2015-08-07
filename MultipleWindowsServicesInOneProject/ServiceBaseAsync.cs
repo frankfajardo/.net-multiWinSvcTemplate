@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace MultipleWindowsServicesInOneProject
 {
-    public abstract class ServiceBaseAsync : ServiceBase
+    public class ServiceBaseAsync : ServiceBase
     {
         protected Task serviceTask;
         protected CancellationTokenSource cancellationTokenSource;
@@ -18,7 +18,9 @@ namespace MultipleWindowsServicesInOneProject
 
         public ServiceBaseAsync()
         {
-
+            this.ServiceName = this.GetType().Name;
+            SetEventLog("Application", this.ServiceName);
+            this.logLevel = LogLevel.Information;
         }
 
         protected override void OnStart(string[] args)
@@ -92,7 +94,7 @@ namespace MultipleWindowsServicesInOneProject
             });
         }
 
-        protected virtual void SetEventLog(string eventLogName, string eventSource, string eventLogLevel)
+        protected virtual void SetEventLog(string eventLogName, string eventSource, string eventLogLevel = null)
         {
             if (String.IsNullOrWhiteSpace(eventLogName))
                 throw new ArgumentNullException("eventLogName");
@@ -111,6 +113,7 @@ namespace MultipleWindowsServicesInOneProject
             {
                 this.logLevel = LogLevel.Information;
             }
+
         }
     }
 
