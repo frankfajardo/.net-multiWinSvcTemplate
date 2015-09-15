@@ -16,16 +16,15 @@ namespace MultipleWindowsServicesInOneProject
             InitializeComponent();
 
             this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "ServiceName"] ?? this.GetType().Name;
+            this.AutoLog = false;
 
-            string eventLogName = ConfigurationManager.AppSettings["EventLogName"] ?? "Application";
-            string eventLogLevel = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"] ?? LogLevel.Information.ToString();
-            SetEventLog(eventLogName, this.ServiceName, eventLogLevel);
+            string logLevelSetting = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"].ToString()
+                ?? LogLevel.Information.ToString();
 
-            string runIntervals = this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "RunIntervalMinutes"] ?? "1";
-            if (!int.TryParse(runIntervals, out this.runIntervalMinutes))
-            {
-                this.runIntervalMinutes = 1;
-            }
+            var eventlog = new EventLog();
+            eventlog.Log = ConfigurationManager.AppSettings["EventLogName"] ?? "Application"; // Use the common event log name
+            eventlog.Source = this.ServiceName;
+            this.eventLogger = new EventLogger(eventlog, logLevelSetting.ConvertToLogLevel());
         }
 
         #endregion Constructors       

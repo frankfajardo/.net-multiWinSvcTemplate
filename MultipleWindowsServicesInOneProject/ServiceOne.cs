@@ -17,26 +17,26 @@ namespace MultipleWindowsServicesInOneProject
             InitializeComponent();
 
             this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "ServiceName"] ?? this.GetType().Name;
+            this.AutoLog = false;
 
-            string eventLogName = ConfigurationManager.AppSettings["EventLogName"] ?? "Application";
-            string eventLogLevel = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"] ?? LogLevel.Information.ToString();
-            SetEventLog(eventLogName, this.ServiceName, eventLogLevel);
+            string logLevelSetting = ConfigurationManager.AppSettings[appSettingPrefix + "EventLogLevel"].ToString()
+                ?? LogLevel.Information.ToString();
 
-            string runIntervals = this.ServiceName = ConfigurationManager.AppSettings[appSettingPrefix + "RunIntervalMinutes"] ?? "1";
-            if (!int.TryParse(runIntervals, out this.runIntervalMinutes))
-            { 
-                this.runIntervalMinutes = 1;
-            }
+            var eventlog = new EventLog();
+            eventlog.Log = ConfigurationManager.AppSettings["EventLogName"] ?? "Application"; // Use the common event log name
+            eventlog.Source = this.ServiceName;
+            this.eventLogger = new EventLogger(eventlog, logLevelSetting.ConvertToLogLevel());
+
         }
 
         #region Method Overrides
 
-        protected override async Task DoWorkAsync(CancellationToken token, EventLog eventLog)
+        protected override async Task DoWorkAsync(CancellationToken token)
         {
-            await Task.Run(() =>
-            {
-                eventLog.WriteInfoEntry("This is ServiceOne doing its task.");
-            });
+            token.ThrowIfCancellationRequested();
+            // Sample work:
+            eventLogger.LogInfo(string.Format("This is {0} doing its task.", this.ServiceName));
+            await Task.Delay(120 * 1000, token); // 120 seconds or 2 minutes
         }
 
         #endregion

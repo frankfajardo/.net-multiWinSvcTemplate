@@ -33,10 +33,10 @@ protected override async Task DoWorkAsync(
     CancellationToken token, 
     EventLog eventLog)
 {
-    await Task.Run(() =>
-    {
-        // Do your stuff here
-    });
+    // Check first if task is cancelled before proceeding
+    token.ThrowIfCancellationRequested();
+    // Do stuff here.
+	// You may also want to check the cancellation token within here if it is a long-running process.
 }
 ```
 #### About `DoWorkAsync()`
@@ -44,16 +44,6 @@ protected override async Task DoWorkAsync(
 The `DoWorkAsync()` method is intended to perform the main processing of your service. It is called recursively and in intervals by `DoRecursiveWorkAsync()`. As soon as your service runs, `DoWorkAsync()` is run. When it returns, `DoRecursiveWorkAsync()` stays idle---by performing a `Task.Delay()`---for a number of minutes defined by the `runIntervalMinutes` property of your service. Afterwards, it runs `DoWorkAsync()` again.  
 
 In the event that `DoWorkAsync()` throws an exception, `DoRecursiveWorkAsync()` logs the exception details in the event log, and then moves on. `ServiceBaseAsync` has a default implementation of `DoWorkAsync()`. which simply throws a `NotImplementedException`.
-
-`DoWorkAsync()` has two input parameters:
-
-1. *Cancellation Token* 
-    
-    This is the cancellation token for the service task. It is passed to this method so anytime `OnStop()` runs, this method gets the cancellation request and can end gracefully.
-
-2. *Event Log*
-    
-     This is the event log the service uses. `DoWorkAsync()` can optionally write logs to this.
 
 
 #### About the Sample Services
