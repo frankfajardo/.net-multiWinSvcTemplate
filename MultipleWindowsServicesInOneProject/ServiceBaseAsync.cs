@@ -3,11 +3,16 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Configuration;
 
 namespace MultipleWindowsServicesInOneProject
 {
+    /// <summary>
+    /// Base class for a service that performs asynchronously processing in loops until the service is stopped.
+    /// </summary>
     public class ServiceBaseAsync : ServiceBase
     {
+        protected string internalName;
         protected Task serviceTask;
         protected CancellationTokenSource cancellationTokenSource;
         protected EventLogger eventLogger;
@@ -15,7 +20,8 @@ namespace MultipleWindowsServicesInOneProject
 
         public ServiceBaseAsync()
         {
-            this.ServiceName = this.GetType().Name;
+            this.internalName = this.GetType().Name;
+            this.ServiceName = this.internalName;
             var eventlog = new EventLog();
             eventlog.Log = "Application";
             eventlog.Source = this.ServiceName;
@@ -32,22 +38,7 @@ namespace MultipleWindowsServicesInOneProject
         protected override void OnStop()
         {
             cancellationTokenSource.Cancel();
-            try
-            {
-                serviceTask.Wait();
-            }
-            catch (ObjectDisposedException)
-            {
-                eventLogger.LogInfo("Task was abruptly terminated. Check previous error logs for details.");
-            }
-            catch (AggregateException ae)
-            {
-                if (!(ae.InnerException is TaskCanceledException))
-                {
-                    var eventMsg = string.Format("Task encountered an error: {0}", ae.InnerException.ToString());
-                    eventLogger.LogError(eventMsg);
-                }
-            }
+            serviceTask.Wait();
             eventLogger.LogInfo("Service is stopped.");
         }
 
@@ -55,28 +46,34 @@ namespace MultipleWindowsServicesInOneProject
         {
             while (true)
             {
-                token.ThrowIfCancellationRequested();
-                eventLogger.LogInfo("Task starts.");
+                if (token.IsCancellationRequested) return;
 
                 // Call the main (async) method. But catch any errors 
                 // as we do not want the exception to bubble up and stop the service.
                 try
                 {
                     await DoWorkAsync(token);
+                    await SleepTillNextRun(token);
                 }
-                catch (Exception e)
+                catch (Exception excp)
                 {
-                    eventLogger.LogError(e.Message);
+                    // Log any errors returned (except TaskCanceledException).
+                    if (!(excp is TaskCanceledException))
+                    {
+                        eventLogger.LogError(string.Format("{0}. {1} Stack trace: {2}", excp.GetType().Name, excp.Message, excp.StackTrace));
+                    }
                 }
 
-                eventLogger.LogInfo("Task ends. Service is now idle.");
-                await SleepTillNextRun(token);
             }
         }
 
+        /// <summary>
+        /// Performs the main processing asyncronously
+        /// </summary>
+        /// <param name="token">Cancellation token</param>
         protected virtual async Task DoWorkAsync(CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
+            if (token.IsCancellationRequested) return;
             await Task.Run(() => 
             { 
                 throw new NotImplementedException(String.Format("The \"{0}\" service has not implemented the DoWorkAsync() method inherited from the ServiceBaseAsync class.", this.ServiceName));
@@ -85,9 +82,38 @@ namespace MultipleWindowsServicesInOneProject
 
         protected virtual async Task SleepTillNextRun(CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
-            this.runIntervalSeconds = 300; // 5 minutes
-            await Task.Delay(this.runIntervalSeconds * 1000, token);
+            // If this task has been cancelled, do not proceed any further.
+            if (token.IsCancellationRequested) return;
+
+            var appSettingsKey = !string.IsNullOrWhiteSpace(this.internalName) ? this.internalName + ".RunIntervalSeconds" : "RunIntervalSeconds";
+
+            // Check the configuration file for the run interval
+            ConfigurationManager.RefreshSection("appSettings");
+            string x = ConfigurationManager.AppSettings[appSettingsKey] ?? "0";
+
+            // If RunIntervalSeconds config settings is available and valid, use it. Else, do nothing.
+            if (int.TryParse(x, out runIntervalSeconds) && runIntervalSeconds > 0)
+            {
+                var statusMsg = string.Format("Sleeping for {0} {1}.", this.runIntervalSeconds, (this.runIntervalSeconds != 1 ? "seconds" : "second"));
+                eventLogger.LogInfo(statusMsg);
+                await Task.Delay(runIntervalSeconds * 1000, token);
+            }
+        }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (eventLogger != null)
+                    eventLogger.Dispose();
+                if (cancellationTokenSource != null)
+                    cancellationTokenSource.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 

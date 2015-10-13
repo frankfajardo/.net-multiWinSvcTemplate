@@ -15,7 +15,10 @@ namespace MultipleWindowsServicesInOneProject
         Information = 4
     }
 
-    public static class LogLevelExtension
+    /// <summary>
+    /// Provides static methods relating to LogLevel
+    /// </summary>
+    public static class LogLevelHelp
     {
         /// <summary>
         /// Determines if the current LogLevel includes the specified event type.
@@ -29,7 +32,7 @@ namespace MultipleWindowsServicesInOneProject
         /// <summary>
         /// Converts a string to a LogLevel
         /// </summary>
-        public static LogLevel ConvertToLogLevel(this string logLevelString)
+        public static LogLevel Parse(string logLevelString)
         {
             LogLevel logLevel;
             if (string.IsNullOrWhiteSpace(logLevelString) || !Enum.TryParse<LogLevel>(logLevelString, out logLevel))
@@ -38,32 +41,112 @@ namespace MultipleWindowsServicesInOneProject
             }
             return logLevel;
         }
+
+        /// <summary>
+        /// Converts the string
+        /// </summary>
+        /// <param name="logLevelString"></param>
+        /// <param name="logLevel"></param>
+        /// <returns></returns>
+        public static bool TryParse(string logLevelString, out LogLevel logLevel)
+        {
+            bool success = false;
+            try
+            {
+                logLevel = LogLevelHelp.Parse(logLevelString);
+                success = true;
+            }
+            catch
+            {
+                logLevel = LogLevel.Undefined;
+            }
+            return success;
+        }
     }
 
     /// <summary>
     /// A event logging helper which allows easily controlling the logging level for an application.
     /// </summary>
-    public sealed class EventLogger
+    public sealed class EventLogger : IDisposable
     {
         private LogLevel loglevel;
         private EventLog eventlog;
+        private bool ownsEventLog = false;
 
         #region Constructor
+
+        /// <summary>
+        /// Initialise a new instance of the EventLogger class that uses an existing EventLog to log any type of event. 
+        /// This EventLogger does not assume ownership of the EventLog and therefore will not dispose of it in its Dispose() method.
+        /// </summary>
+        /// <param name="eventlog">The eventlog to use</param>
+        /// <exception cref="ArgumentNullException">When eventLog is null</exception>
         public EventLogger(EventLog eventlog)
         {
+            if (eventlog == null)
+                throw new ArgumentNullException("Eventlog cannot be null.");
             this.eventlog = eventlog;
             this.loglevel = LogLevel.Undefined;
         }
+
+        /// <summary>
+        /// Initialises a new instance of the EventLogger class that uses an existing EventLog, to log events based on the specified LogLevel.
+        /// This EventLogger does not assume ownership of the EventLog and therefore will not dispose of it in its Dispose() method.
+        /// </summary>
+        /// <param name="eventlog">The eventlog to use</param>
+        /// <param name="loglevel">The loglevel to follow</param>
+        /// <exception cref="ArgumentNullException">When eventLog is null</exception>
         public EventLogger(EventLog eventlog, LogLevel loglevel)
         {
+            if (eventlog == null)
+                throw new ArgumentNullException("Eventlog cannot be null.");
             this.eventlog = eventlog;
+            this.loglevel = loglevel;
+        }
+
+        /// <summary>
+        /// Initialises a new instance of the EventLogger class to log any type of event.
+        /// This EventLogger will create an EventLog with the specified log name and source. 
+        /// It assumes ownership of the EventLog and will dispose of it in its Dispose() method.
+        /// </summary>
+        /// <param name="logname">The log name to use when creating the event log</param>
+        /// <param name="logsource">The source for the events</param>
+        /// <exception cref="ArgumentNullException">When either log name or source is null or empty</exception>
+        public EventLogger(string logname, string logsource)
+        {
+            if (string.IsNullOrWhiteSpace(logname))
+                throw new ArgumentNullException("Log name is required.");
+            if (string.IsNullOrWhiteSpace(logsource))
+                throw new ArgumentNullException("Log source is required.");
+            this.eventlog = new EventLog(logname, ".", logsource);
+            this.ownsEventLog = true;
+            this.loglevel = LogLevel.Undefined;
+        }
+
+        /// <summary>
+        /// Initialises a new instance of the EventLogger class to log events based on the specified LogLevel.
+        /// This EventLogger will create an EventLog with the specified log name and source. 
+        /// It assumes ownership of the EventLog and will dispose of it in its Dispose() method.
+        /// </summary>
+        /// <param name="logname">The log name to use when creating the event log</param>
+        /// <param name="logsource">The source for the events</param>
+        /// <param name="loglevel">The loglevel to follow</param>
+        /// <exception cref="ArgumentNullException">When either log name or source is null or empty</exception>
+        public EventLogger(string logname, string logsource, LogLevel loglevel)
+        {
+            if (string.IsNullOrWhiteSpace(logname))
+                throw new ArgumentNullException("Log name is required.");
+            if (string.IsNullOrWhiteSpace(logsource))
+                throw new ArgumentNullException("Log source is required.");
+            this.eventlog = new EventLog(logname, ".", logsource);
+            this.ownsEventLog = true;
             this.loglevel = loglevel;
         }
 
         #endregion Constructor
 
         /// <summary>
-        /// Defines the logging level to use when this EventLogger receives request to log an event.
+        /// Gets or sets the loglevel to follow when logging events.
         /// </summary>
         public LogLevel LogLevel
         {
@@ -72,73 +155,74 @@ namespace MultipleWindowsServicesInOneProject
         }
 
         /// <summary>
-        /// Defines the event log to use.
+        /// Gets the event log to used by this event logger.
         /// </summary>
         public EventLog EventLog
         {
             get { return this.eventlog; }
-            set { this.eventlog = value; }
         }
 
+        // <summary>
+        /// Disposes the EventLogger. It disposes of the EventLog it uses, provided that EventLog was created by this EventLogger.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (this.ownsEventLog && this.eventlog != null)
+                    this.eventlog.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Provides extension methods for EventLogger
+    /// </summary>
+    public static class EventLoggerExtension
+    {
         /// <summary>
         /// Writes an Error event to the event log, provided the LogLevel allows for error events.
         /// </summary>
         /// <param name="msg">The event text to write</param>
-        public void LogError(string msg)
+        public static void LogError(this EventLogger eventLogger, string msg)
         {
-            if (this.loglevel.IncludesEventType(EventLogEntryType.Error))
-                this.eventlog.WriteEntry(msg, EventLogEntryType.Error);
+            // Quietly ignore request if eventLogger is null.
+            if (eventLogger == null) return;
+            // Log event message based on logging level
+            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Error))
+                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Error);
         }
 
         /// <summary>
         /// Writes a Warning event to the event log, provided the LogLevel allows for warning events
         /// </summary>
         /// <param name="msg">The event text to write</param>
-        public void LogWarning(string msg)
+        public static void LogWarning(this EventLogger eventLogger, string msg)
         {
-            if (this.loglevel.IncludesEventType(EventLogEntryType.Warning))
-                this.eventlog.WriteEntry(msg, EventLogEntryType.Warning);
+            // Quietly ignore request if eventLogger is null.
+            if (eventLogger == null) return;
+            // Log event message based on logging level
+            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Warning))
+                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Warning);
         }
 
         /// <summary>
         /// Writes an Information event to the event log, provided the LogLevel allows for information events
         /// </summary>
         /// <param name="msg">The event text to write</param>
-        public void LogInfo(string msg)
+        public static void LogInfo(this EventLogger eventLogger, string msg)
         {
-            if (this.loglevel.IncludesEventType(EventLogEntryType.Information))
-                this.eventlog.WriteEntry(msg, EventLogEntryType.Information);
+            // Quietly ignore request if eventLogger is null.
+            if (eventLogger == null) return;
+            // Log event message based on logging level
+            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Information))
+                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Information);
         }
-
-
     }
-
-    //public static class EventLogExtension
-    //{
-    //    public static void WriteErrorEntry(this EventLog log, string msg, LogLevel loglevel = LogLevel.Undefined)
-    //    {
-    //        //if (loglevel.IncludesEventType(EventLogEntryType.Error))
-    //        if (loglevel == LogLevel.Undefined || (int)loglevel >= (int)EventLogEntryType.Error)
-    //            log.WriteEntry(msg, EventLogEntryType.Error);
-    //    }
-
-    //    public static void WriteWarningEntry(this EventLog log, string msg, LogLevel loglevel = LogLevel.Undefined)
-    //    {
-    //        //if (loglevel.IncludesEventType(EventLogEntryType.Warning))
-    //        if (loglevel == LogLevel.Undefined || (int)loglevel >= (int)EventLogEntryType.Warning)
-    //            log.WriteEntry(msg, EventLogEntryType.Warning);
-    //    }
-
-    //    public static void WriteInfoEntry(this EventLog log, string msg, LogLevel loglevel = LogLevel.Undefined)
-    //    {
-    //        //if (loglevel.IncludesEventType(EventLogEntryType.Information))
-    //        if (loglevel == LogLevel.Undefined || (int)loglevel >= (int)EventLogEntryType.Information)
-    //            log.WriteEntry(msg, EventLogEntryType.Information);
-    //    }
-
-    //    public static bool IncludesEventType(this LogLevel loglevel, EventLogEntryType eventType)
-    //    {
-    //        return (loglevel == LogLevel.Undefined || (int)loglevel >= (int)eventType);
-    //    }
-    //}
 }

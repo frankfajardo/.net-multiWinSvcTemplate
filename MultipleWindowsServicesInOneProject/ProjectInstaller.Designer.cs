@@ -2,7 +2,7 @@
 using System.Configuration.Install;
 using System.Configuration;
 
-namespace Abcm.WindowsServices
+namespace MultipleWindowsServicesInOneProject
 {
 
     partial class ProjectInstaller
