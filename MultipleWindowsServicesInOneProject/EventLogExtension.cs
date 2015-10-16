@@ -145,6 +145,8 @@ namespace MultipleWindowsServicesInOneProject
 
         #endregion Constructor
 
+        #region Properties
+
         /// <summary>
         /// Gets or sets the loglevel to follow when logging events.
         /// </summary>
@@ -162,7 +164,44 @@ namespace MultipleWindowsServicesInOneProject
             get { return this.eventlog; }
         }
 
-        // <summary>
+        #endregion  Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Writes an Error event to the event log, provided the LogLevel allows for error events.
+        /// </summary>
+        /// <param name="msg">The event text to write</param>
+        public void LogError(string msg)
+        {
+            // Log event message based on logging level
+            if (this.LogLevel.IncludesEventType(EventLogEntryType.Error))
+                this.EventLog.WriteEntry(msg, EventLogEntryType.Error);
+        }
+
+        /// <summary>
+        /// Writes a Warning event to the event log, provided the LogLevel allows for warning events
+        /// </summary>
+        /// <param name="msg">The event text to write</param>
+        public void LogWarning(string msg)
+        {
+            // Log event message based on logging level
+            if (this.LogLevel.IncludesEventType(EventLogEntryType.Warning))
+                this.EventLog.WriteEntry(msg, EventLogEntryType.Warning);
+        }
+
+        /// <summary>
+        /// Writes an Information event to the event log, provided the LogLevel allows for information events
+        /// </summary>
+        /// <param name="msg">The event text to write</param>
+        public void LogInfo(string msg)
+        {
+            // Log event message based on logging level
+            if (this.LogLevel.IncludesEventType(EventLogEntryType.Information))
+                this.EventLog.WriteEntry(msg, EventLogEntryType.Information);
+        }
+
+        /// <summary>
         /// Disposes the EventLogger. It disposes of the EventLog it uses, provided that EventLog was created by this EventLogger.
         /// </summary>
         public void Dispose()
@@ -179,50 +218,8 @@ namespace MultipleWindowsServicesInOneProject
                     this.eventlog.Dispose();
             }
         }
+
+        #endregion Methods
     }
-
-    /// <summary>
-    /// Provides extension methods for EventLogger
-    /// </summary>
-    public static class EventLoggerExtension
-    {
-        /// <summary>
-        /// Writes an Error event to the event log, provided the LogLevel allows for error events.
-        /// </summary>
-        /// <param name="msg">The event text to write</param>
-        public static void LogError(this EventLogger eventLogger, string msg)
-        {
-            // Quietly ignore request if eventLogger is null.
-            if (eventLogger == null) return;
-            // Log event message based on logging level
-            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Error))
-                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Error);
-        }
-
-        /// <summary>
-        /// Writes a Warning event to the event log, provided the LogLevel allows for warning events
-        /// </summary>
-        /// <param name="msg">The event text to write</param>
-        public static void LogWarning(this EventLogger eventLogger, string msg)
-        {
-            // Quietly ignore request if eventLogger is null.
-            if (eventLogger == null) return;
-            // Log event message based on logging level
-            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Warning))
-                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Warning);
-        }
-
-        /// <summary>
-        /// Writes an Information event to the event log, provided the LogLevel allows for information events
-        /// </summary>
-        /// <param name="msg">The event text to write</param>
-        public static void LogInfo(this EventLogger eventLogger, string msg)
-        {
-            // Quietly ignore request if eventLogger is null.
-            if (eventLogger == null) return;
-            // Log event message based on logging level
-            if (eventLogger.LogLevel.IncludesEventType(EventLogEntryType.Information))
-                eventLogger.EventLog.WriteEntry(msg, EventLogEntryType.Information);
-        }
-    }
+    
 }
